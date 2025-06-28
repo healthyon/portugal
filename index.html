@@ -239,10 +239,24 @@
 
             let weatherChartInstance, drivingTimeChartInstance, lisbonCardChartInstance, portoCardChartInstance, bilbaoCardChartInstance;
             
-            function stripMarkdown(text) {
+            function formatAIResponse(text) {
                 if (!text) return '';
-                let output = text.replace(/^#+\s*/gm, '').replace(/(\*\*|__)(.*?)\1/g, '$2').replace(/(\*|_)(.*?)\1/g, '$2').replace(/^\s*[\*\-]\s/gm, '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\n/g, '<br>');
-                return output;
+                let processedText = text;
+
+                // Remove markdown headers, bold, italics, list items
+                processedText = processedText.replace(/^#+\s*/gm, ''); 
+                processedText = processedText.replace(/(\*\*|__)(.*?)\1/g, '$2');
+                processedText = processedText.replace(/(\*|_)(.*?)\1/g, '$2');
+                processedText = processedText.replace(/^\s*[\*\-]\s/gm, '');
+
+                // Find URLs and wrap them in <a> tags
+                const urlRegex = /(https?:\/\/[^\s"'\<\>]+)/g;
+                processedText = processedText.replace(urlRegex, '<a href="$1" target="_blank" class="text-blue-600 hover:underline break-all" rel="noopener noreferrer">$1</a>');
+
+                // Convert newlines to <br>
+                processedText = processedText.replace(/\n/g, '<br>');
+                
+                return processedText;
             }
 
             async function getGeminiResponse(prompt) {
@@ -329,7 +343,7 @@
                         const theme = button.dataset.theme;
                         const prompt = `저는 59세 한국인 여행자입니다. 현재 ${city}에 있으며, 오늘의 여행 테마는 '${theme}'입니다. 이 테마에 맞춰, 여유롭고 문화적으로 깊이 있는 활동 2가지를 추천해주세요. 각 활동에 대한 간단한 설명과 왜 50대 여행자에게 적합한지 이유를 포함해주세요. 결과는 마크다운 형식을 사용하지 말고 일반 텍스트로 간결하게 보여주세요.`;
                         const result = await getGeminiResponse(prompt);
-                        outputDiv.innerHTML = stripMarkdown(result);
+                        outputDiv.innerHTML = formatAIResponse(result);
                         outputDiv.style.display = 'block';
                         const content = card.querySelector('.accordion-content');
                         if (content.style.maxHeight) { content.style.maxHeight = content.scrollHeight + 'px'; }
@@ -429,7 +443,8 @@
                 const input = document.getElementById('food-preference-input');
                 const outputDiv = document.getElementById('food-recommendation-output');
                 const loader = button.querySelector('.loader');
-                button.addEventListener('click', async () => {
+                
+                async function handleSearch() {
                     const preference = input.value.trim();
                     if (!preference) {
                         outputDiv.innerHTML = "먼저 원하는 음식이나 식당을 입력해주세요.";
@@ -438,10 +453,19 @@
                     loader.style.display = 'inline-block'; button.disabled = true;
                     const prompt = `You are a helpful local guide for a 59-year-old Korean traveler in Portugal or Northern Spain. The traveler wants to find a restaurant. Based on their search query, recommend a minimum of 4 and a maximum of 6 specific, real restaurants. For each recommendation, provide the restaurant's name, its approximate rating (e.g., 4.5/5), a brief appealing description, and a valid Google Maps search link for that restaurant. The traveler's search query is: '${preference}'. Respond in Korean. Crucially, your entire response must be plain text without any Markdown formatting (do not use *, #, **, etc.).`;
                     const result = await getGeminiResponse(prompt);
-                    outputDiv.innerHTML = stripMarkdown(result);
+                    outputDiv.innerHTML = formatAIResponse(result);
                     outputDiv.style.display = 'block';
                     loader.style.display = 'none'; button.disabled = false;
+                }
+
+                input.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        handleSearch();
+                    }
                 });
+                
+                button.addEventListener('click', handleSearch);
             }
 
             function initFilters() {
