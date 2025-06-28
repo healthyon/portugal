@@ -27,8 +27,8 @@
         .content-section.active { display: block; }
         .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
         .recommendation-card { display: block; }
-        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
-        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .chart-container { position: relative; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; height: 300px; max-height: 350px; }
+        @media (min-width: 768px) { .chart-container { height: 320px; } }
         .gemini-btn {
             background: linear-gradient(45deg, #f9a8d4, #f472b6);
             transition: all 0.3s ease;
@@ -86,8 +86,8 @@
 
             <section id="recommend" class="content-section">
                 <div class="text-center mb-8 p-4 bg-amber-50 rounded-lg">
-                    <h2 class="text-2xl font-bold text-amber-800 mb-2">엄선된 추천 목록</h2>
-                    <p class="text-stone-700">최고의 미식 경험과 편안한 휴식을 위해 엄선한 맛집과 숙소 목록입니다. 아래 버튼으로 도시와 종류를 선택하여 원하는 정보를 쉽게 찾아보세요.</p>
+                    <h2 class="text-2xl font-bold text-amber-800 mb-2">도시별 추천 맛집 & 숙소</h2>
+                    <p class="text-stone-700">최고의 미식 경험과 편안한 휴식을 위해 엄선한 목록입니다. 아래 버튼으로 도시와 종류를 선택하여 원하는 정보를 쉽게 찾아보세요.</p>
                 </div>
                 <!-- Gemini Culinary Explorer -->
                 <div class="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-pink-500">
@@ -118,35 +118,10 @@
             
             <section id="tips" class="content-section">
                 <div class="text-center mb-8 p-4 bg-amber-50 rounded-lg">
-                    <h2 class="text-2xl font-bold text-amber-800 mb-2">여행 전문가의 심층 분석</h2>
-                    <p class="text-stone-700">더욱 경제적이고 깊이 있는 여행을 위한 전문가의 분석 정보입니다. 각 도시의 여행자 카드 구매 여부를 결정하는 데 도움을 드립니다.</p>
+                    <h2 class="text-2xl font-bold text-amber-800 mb-2">전문가 심층 팁 & 분석</h2>
+                    <p class="text-stone-700">더욱 경제적이고 깊이 있는 여행을 위한 전문가의 분석 정보입니다. 각 주제를 클릭하여 상세 내용을 확인해 보세요.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="text-xl font-bold text-center mb-4 text-amber-700">리스본 카드 분석</h3>
-                        <div class="chart-container h-64 md:h-72"><canvas id="lisbonCardChart"></canvas></div>
-                        <p class="mt-4 text-sm text-stone-600">
-                            <b>결론: 편의성을 고려하면 구매 가치 있음.</b><br>
-                            순수 비용 절감 효과는 크지 않으나, 매번 표를 구매하는 번거로움 없이 대중교통을 이용할 수 있다는 점이 큰 장점입니다.
-                        </p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="text-xl font-bold text-center mb-4 text-blue-700">포르투 카드 분석</h3>
-                        <div class="chart-container h-64 md:h-72"><canvas id="portoCardChart"></canvas></div>
-                        <p class="mt-4 text-sm text-stone-600">
-                           <b>결론: 구매 비추천.</b><br>
-                           핵심 명소 할인이 적어 대중교통 전용 '안단테 투어 카드'를 구매하고, 입장권은 개별 구매하는 것이 더 경제적입니다.
-                        </p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="text-xl font-bold text-center mb-4 text-red-700">빌바오 카드 분석</h3>
-                        <div class="chart-container h-64 md:h-72"><canvas id="bilbaoCardChart"></canvas></div>
-                        <p class="mt-4 text-sm text-stone-600">
-                           <b>결론: 구겐하임 방문 시 추천.</b><br>
-                           교통편과 함께 구겐하임 미술관 입장권이 포함되어 있어 매우 편리합니다. 미술관 방문 계획이 있다면 구매를 적극 추천합니다.
-                        </p>
-                    </div>
-                </div>
+                <div id="tips-accordion-container" class="space-y-4"></div>
             </section>
         </main>
 
@@ -181,16 +156,75 @@
                 }
             ],
             recommendations: [
-                { id: 1, city: 'lisbon', type: 'food', name: 'Cervejaria Ramiro', desc: `앤서니 보딘도 극찬한 최고의 해산물 식당. 예약 필수.`, note: '해산물' },
-                { id: 2, city: 'lisbon', type: 'stay', name: 'Hotel da Baixa', desc: `바이샤 중심 위치. 주차는 인근 공영주차장 이용.`, note: '4성급 / 위치' },
-                { id: 3, city: 'aveiro', type: 'food', name: 'Maré Cheia', desc: `신선한 해산물 스튜(Caldeirada)가 일품인 현지 맛집.`, note: '해산물' },
-                { id: 4, city: 'aveiro', type: 'stay', name: 'Hotel Moliceiro', desc: `중앙 운하 바로 앞에 위치한 로맨틱한 4성급 호텔. 주차 가능.`, note: '4성급 / 전망' },
-                { id: 5, city: 'porto', type: 'food', name: 'Tapabento', desc: `창의적인 해산물 요리. 예약이 매우 어렵지만 강력 추천.`, note: '해산물/현대' },
-                { id: 6, city: 'porto', type: 'stay', name: 'Pestana Vintage Porto', desc: `히베이라 강변의 환상적인 전망. 주차는 제휴 주차장 이용.`, note: '5성급 / 전망' },
-                { id: 7, city: 'bilbao', type: 'food', name: 'Gure Toki', desc: `누에바 광장에 위치한 혁신적인 핀초 바로 현지인에게 인기.`, note: '핀초 바' },
-                { id: 8, city: 'bilbao', type: 'food', name: 'La Viña del Ensanche', desc: `1927년부터 이어진 전통 있는 레스토랑. 하몽과 와인이 유명.`, note: '전통/하몽' },
-                { id: 9, city: 'bilbao', type: 'stay', name: 'Gran Hotel Domine', desc: `구겐하임 미술관 맞은편, 최고의 전망을 자랑하는 5성급 호텔. 주차 가능.`, note: '5성급 / 전망' },
-                { id: 10, city: 'bilbao', type: 'stay', name: 'Hotel Miró', desc: `구겐하임 근처의 세련된 디자인을 자랑하는 부티크 호텔. 주차 가능.`, note: '4성급 / 디자인' },
+                { id: 1, city: 'lisbon', type: 'food', name: 'Cervejaria Ramiro', desc: '해산물 본연의 맛을 즐길 수 있는 리스본 최고의 맛집. 예약 필수.', note: '특급 맛집', price: '€€€' },
+                { id: 2, city: 'lisbon', type: 'food', name: 'Solar dos Presuntos', desc: '현지인도 사랑하는 고급 해산물 레스토랑. 문어 요리 추천.', note: '고급/해산물', price: '€€€€' },
+                { id: 3, city: 'lisbon', type: 'food', name: 'Time Out Market Lisboa', desc: '유명 맛집들을 한곳에 모아놓은 푸드코트. 다양한 선택지.', note: '푸드코트/다양성', price: '€€' },
+                { id: 4, city: 'lisbon', type: 'food', name: 'A Ginjinha', desc: '체리주 진자(Ginja)를 작은 잔에 마시는 역사적인 가게.', note: '전통주 체험', price: '€' },
+                { id: 5, city: 'lisbon', type: 'food', name: 'Pastéis de Belém', desc: '설명이 필요 없는 원조 에그타르트. 벨렝 지구 방문 시 필수.', note: '디저트/필수', price: '€' },
+                { id: 6, city: 'lisbon', type: 'stay', name: 'Hotel da Baixa', desc: '바이샤 중심 최적의 위치. 현대적 시설과 훌륭한 조식.', note: '4성급/위치 최상', price: '€€€' },
+                { id: 7, city: 'lisbon', type: 'stay', name: 'Pousada de Lisboa', desc: '코메르시우 광장의 5성급 럭셔리 호텔. 특별한 경험.', note: '5성급/럭셔리', price: '€€€€€' },
+                { id: 8, city: 'aveiro', type: 'food', name: 'Maré Cheia', desc: '신선한 해산물 스튜(Caldeirada)가 일품인 현지 인기 식당.', note: '현지인 맛집', price: '€€' },
+                { id: 9, city: 'aveiro', type: 'stay', name: 'Hotel Moliceiro', desc: '중앙 운하 바로 앞에 위치한 로맨틱한 4성급 호텔. 주차 가능.', note: '4성급/전망', price: '€€€' },
+                { id: 10, city: 'porto', type: 'food', name: 'Tapabento', desc: '상 벤투 기차역 옆, 창의적인 해산물 요리. 예약 극히 어려움.', note: '특급 맛집', price: '€€€' },
+                { id: 11, city: 'porto', type: 'food', name: 'Café Santiago', desc: '포르투 대표 음식 프란세지냐의 대명사. 항상 붐비는 곳.', note: '프란세지냐/필수', price: '€€' },
+                { id: 12, city: 'porto', type: 'food', name: 'Majestic Café', desc: '세계에서 가장 아름다운 카페 중 하나. 벨 에포크 시대 분위기.', note: '카페/분위기', price: '€€€' },
+                { id: 13, city: 'porto', type: 'stay', name: 'Pestana Vintage Porto', desc: '히베이라 강변의 환상적인 전망. 유네스코 유산 내 위치.', note: '5성급/전망', price: '€€€€€' },
+                { id: 14, city: 'porto', type: 'stay', name: 'Descobertas Boutique Hotel', desc: '히베이라 지구의 훌륭한 위치와 시설을 갖춘 부티크 호텔.', note: '4성급/부티크', price: '€€€' },
+                { id: 15, city: 'bilbao', type: 'food', name: 'Gure Toki', desc: '누에바 광장의 혁신적인 핀초 바. 창의적인 핀초가 일품.', note: '핀초/필수', price: '€€' },
+                { id: 16, city: 'bilbao', type: 'food', name: 'La Viña del Ensanche', desc: '1927년부터 이어진 전통 있는 레스토랑. 하몽과 와인이 유명.', note: '전통/하몽', price: '€€€' },
+                { id: 17, city: 'bilbao', type: 'stay', name: 'Gran Hotel Domine', desc: '구겐하임 미술관 맞은편, 최고의 전망을 자랑하는 5성급 호텔.', note: '5성급/전망', price: '€€€€€' },
+                { id: 18, city: 'bilbao', type: 'stay', name: 'Hotel Miró', desc: '구겐하임 근처의 세련된 디자인을 자랑하는 부티크 호텔.', note: '4성급/디자인', price: '€€€€' },
+            ],
+            tips: [
+                {
+                    title: '🚗 렌터카 운전자를 위한 완벽 가이드',
+                    content: `<div class="space-y-4 text-left">
+                        <div><h4 class="font-bold text-lg text-stone-700">고속도로 통행료 시스템 (매우 중요)</h4>
+                        <p class="text-sm">포르투갈 고속도로는 전자식과 수동식이 혼재되어 있어 복잡합니다. 렌터카 계약 시 '비아 베르데(Via Verde)' 장치를 반드시 추가하세요. 이 장치가 있으면 모든 요금소를 하이패스처럼 통과하고 나중에 렌터카 회사에서 한 번에 정산하여 매우 편리합니다. 장치가 없다면 전자식 전용 고속도로(초록색 'V' 표시)에 잘못 진입 시 벌금을 낼 수 있습니다.</p></div>
+                        <div><h4 class="font-bold text-lg text-stone-700">주유소 이용법</h4>
+                        <p class="text-sm">주유소는 대부분 셀프서비스입니다. 디젤(Gasóleo)과 가솔린(Gasolina)을 잘 구분해야 합니다. 보통 가솔린은 95(일반), 98(고급)로 나뉩니다. 주유 후 주유기 번호를 기억하고, 주유소 내 편의점으로 들어가 결제하는 방식이 일반적입니다.</p></div>
+                        <div><h4 class="font-bold text-lg text-stone-700">시내 주차 완전 정복</h4>
+                        <p class="text-sm">리스본, 포르투 같은 대도시는 시내 주차가 매우 어렵습니다. <b>파란색 선</b>으로 표시된 구역은 유료 주차 구역으로, 근처의 'Parquímetro' 기계에서 티켓을 구매해 차 앞 유리에 두어야 합니다. 하지만 시간제한이 있고 복잡하므로, 가장 안전하고 편리한 방법은 <b>지하 공영 주차장(Parque de Estacionamento)</b>을 이용하는 것입니다. 요금은 비싸지만 마음 편히 관광할 수 있습니다. 주차장이 제공되는 숙소를 예약하는 것이 최선입니다.</p></div>
+                    </div>`
+                },
+                {
+                    title: '🍽️ 미식가를 위한 현지 음식 탐방',
+                    content: `<div class="space-y-4 text-left">
+                        <div><h4 class="font-bold text-lg text-stone-700">포르투갈 대표 음식 더 알아보기</h4>
+                        <p class="text-sm"><b>카타플라나(Cataplana de Marisco):</b> 구리로 된 전통 냄비에 각종 해산물을 넣고 끓여낸 해물 스튜. 국물이 시원하여 한국인 입맛에 잘 맞습니다.<br><b>폴부 아 라가레이루(Polvo à Lagareiro):</b> 부드럽게 삶은 문어를 올리브유와 마늘에 구워낸 요리. 최고의 문어 요리를 경험할 수 있습니다.<br><b>비파나(Bifana):</b> 마늘과 와인에 재운 돼지고기를 빵 사이에 끼워 먹는 포르투갈식 샌드위치. 간단한 식사로 제격입니다.</p></div>
+                        <div><h4 class="font-bold text-lg text-stone-700">빌바오 핀초(Pintxos) 문화 즐기기</h4>
+                        <p class="text-sm">핀초는 바스크 지방의 타파스로, 보통 빵 위에 다양한 재료를 올려 이쑤시개로 고정한 음식입니다. 바(Bar)의 카운터에 진열된 핀초를 접시에 담아오고, 음료와 함께 즐긴 후 나중에 이쑤시개 개수로 계산하는 것이 일반적입니다. 한 곳에서 배부르게 먹기보다, 여러 바를 옮겨 다니며(Txikiteo) 다양한 핀초를 맛보는 것이 현지 스타일입니다.</p></div>
+                    </div>`
+                },
+                {
+                    title: '🛍️ 쇼핑과 기념품 완벽 정복',
+                    content: `<div class="space-y-4 text-left">
+                        <div><h4 class="font-bold text-lg text-stone-700">무엇을 살까? (추천 기념품)</h4>
+                        <p class="text-sm"><b>정어리 통조림(Conservas):</b> 단순한 통조림이 아닌, 예쁜 디자인의 패키지로 포장된 예술 작품과 같습니다. 선물용으로 인기가 높습니다.<br><b>코르크 제품:</b> 포르투갈은 세계 최대의 코르크 생산국입니다. 가방, 지갑, 액세서리 등 가볍고 독특한 코르크 제품을 구매해 보세요.<br><b>아줄레주 타일:</b> 포르투갈의 상징인 아름다운 타일. 작은 장식용 타일이나 컵 받침 등은 좋은 기념품이 됩니다.<br><b>포트 와인:</b> 포르투 여행의 필수 기념품. 와이너리나 전문점에서 다양한 종류의 포트 와인을 구매할 수 있습니다.</p></div>
+                        <div><h4 class="font-bold text-lg text-stone-700">어디서 살까?</h4>
+                        <p class="text-sm"><b>A Vida Portuguesa:</b> 리스본과 포르투에 지점이 있는 아름다운 상점. 포르투갈의 전통과 현대적 디자인이 어우러진 고품질의 제품들을 판매합니다.<br><b>Claus Porto:</b> 130년 전통의 고급 비누 및 향수 브랜드. 아름다운 패키지로 선물용으로 인기가 많습니다.</p></div>
+                    </div>`
+                },
+                {
+                    title: '📊 도시별 여행자 카드 심층 분석',
+                    content: `<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="bg-white p-6 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-bold text-center mb-4 text-amber-700">리스본 카드</h3>
+                            <div class="chart-container h-56 md:h-64"><canvas id="lisbonCardChart"></canvas></div>
+                            <p class="mt-4 text-sm text-stone-600"><b>결론: 편의성을 고려하면 구매 가치 있음.</b><br>순수 비용 절감 효과는 크지 않으나, 매번 표를 구매하는 번거로움 없이 대중교통을 이용할 수 있다는 점이 큰 장점입니다.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-bold text-center mb-4 text-blue-700">포르투 카드</h3>
+                            <div class="chart-container h-56 md:h-64"><canvas id="portoCardChart"></canvas></div>
+                            <p class="mt-4 text-sm text-stone-600"><b>결론: 구매 비추천.</b><br>핵심 명소 할인이 적어 대중교통 전용 '안단테 투어 카드'를 구매하고, 입장권은 개별 구매하는 것이 더 경제적입니다.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-inner">
+                            <h3 class="text-xl font-bold text-center mb-4 text-red-700">빌바오 카드</h3>
+                            <div class="chart-container h-56 md:h-64"><canvas id="bilbaoCardChart"></canvas></div>
+                            <p class="mt-4 text-sm text-stone-600"><b>결론: 구겐하임 방문 시 추천.</b><br>교통편과 함께 구겐하임 미술관 입장권이 포함되어 있어 매우 편리합니다. 미술관 방문 계획이 있다면 구매를 적극 추천합니다.</p>
+                        </div>
+                    </div>`
+                },
             ]
         };
 
@@ -200,29 +234,19 @@
             const itineraryContainer = document.getElementById('itinerary-container');
             const prepAccordionContainer = document.getElementById('prep-accordion-container');
             const recommendContainer = document.getElementById('recommend-container');
+            const tipsAccordionContainer = document.getElementById('tips-accordion-container');
             const filterBtns = document.querySelectorAll('.filter-btn');
 
             let weatherChartInstance, drivingTimeChartInstance, lisbonCardChartInstance, portoCardChartInstance, bilbaoCardChartInstance;
-
+            
             function stripMarkdown(text) {
                 if (!text) return '';
-                let output = text;
-                // Remove headers (e.g., #, ##)
-                output = output.replace(/^#+\s*/gm, '');
-                // Remove bold/italic markers but keep the text
-                output = output.replace(/(\*\*|__)(.*?)\1/g, '$2'); // Bold
-                output = output.replace(/(\*|_)(.*?)\1/g, '$2');   // Italic
-                // Remove list markers (unordered) but keep the text
-                output = output.replace(/^\s*[\*\-]\s/gm, '');
-                // Remove links but keep the text
-                output = output.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
-                // Convert newlines to <br> for HTML display
-                output = output.replace(/\n/g, '<br>');
+                let output = text.replace(/^#+\s*/gm, '').replace(/(\*\*|__)(.*?)\1/g, '$2').replace(/(\*|_)(.*?)\1/g, '$2').replace(/^\s*[\*\-]\s/gm, '').replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/\n/g, '<br>');
                 return output;
             }
 
             async function getGeminiResponse(prompt) {
-                const apiKey = "AIzaSyACAoKxi4NsWm-zstIVpXLTh4apZmGz7Z0"; // 보안을 위해 비워두고, 사용 시점에 실제 키를 붙여넣으세요.
+                const apiKey = "AIzaSyACAoKxi4NsWm-zstIVpXLTh4apZmGz7Z0"; 
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
                 try {
@@ -246,7 +270,11 @@
                             if (content.id === target) { content.classList.add('active'); }
                         });
                         if (target === 'prep') { createWeatherChart(); createDrivingTimeChart(); }
-                        else if (target === 'tips') { createLisbonCardChart(); createPortoCardChart(); createBilbaoCardChart(); }
+                        else if (target === 'tips') {
+                            if (!document.getElementById('lisbonCardChart').chart) createLisbonCardChart();
+                            if (!document.getElementById('portoCardChart').chart) createPortoCardChart();
+                            if (!document.getElementById('bilbaoCardChart').chart) createBilbaoCardChart();
+                        }
                     });
                 });
             }
@@ -339,6 +367,35 @@
                 });
             }
 
+            function createTipsAccordion() {
+                tipsAccordionContainer.innerHTML = '';
+                appData.tips.forEach(item => {
+                    const accordion = document.createElement('div');
+                    accordion.className = 'border border-stone-200 rounded-lg shadow-sm overflow-hidden bg-white';
+                    accordion.innerHTML = `
+                        <div class="p-4 flex justify-between items-center cursor-pointer transition-colors duration-300 hover:bg-amber-50">
+                            <h3 class="text-xl font-bold text-stone-800">${item.title}</h3>
+                            <span class="text-amber-600 transform transition-transform duration-300">&#9662;</span>
+                        </div>
+                        <div class="accordion-content">
+                             <div class="p-6 border-t border-stone-200 bg-stone-50 text-stone-700">
+                                ${item.content}
+                            </div>
+                        </div>
+                    `;
+                    tipsAccordionContainer.appendChild(accordion);
+                    accordion.querySelector('.p-4').addEventListener('click', () => {
+                        const content = accordion.querySelector('.accordion-content');
+                        const icon = accordion.querySelector('.text-amber-600.transform');
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null; icon.style.transform = 'rotate(0deg)';
+                        } else {
+                            content.style.maxHeight = content.scrollHeight + 'px'; icon.style.transform = 'rotate(180deg)';
+                        }
+                    });
+                });
+            }
+
             function createRecommendations() {
                 recommendContainer.innerHTML = '';
                 appData.recommendations.forEach(item => {
@@ -349,16 +406,19 @@
                     } else { borderColor = 'border-red-500'; textColor = 'text-red-700'; }
 
                     const card = document.createElement('div');
-                    card.className = `recommendation-card border-l-4 ${borderColor} bg-white p-4 rounded-lg shadow-md transition-transform duration-300 hover:scale-105`;
+                    card.className = `recommendation-card border-l-4 ${borderColor} bg-white p-4 rounded-lg shadow-md flex flex-col h-full`;
                     card.dataset.filter = `${item.city}-${item.type}`;
                     if(item.city === 'aveiro') card.dataset.filter = 'aveiro-all';
 
                     card.innerHTML = `
-                        <div class="flex justify-between items-start">
-                             <h4 class="text-lg font-bold text-stone-800">${item.name}</h4>
-                             <span class="text-xs font-semibold ${textColor} bg-opacity-20 ${borderColor.replace('500', '100').replace('border-','bg-')} py-1 px-2 rounded-full">${item.note}</span>
+                        <div class="flex-grow">
+                            <div class="flex justify-between items-start">
+                                <h4 class="text-lg font-bold text-stone-800 pr-2">${item.name}</h4>
+                                <span class="text-xs font-semibold ${textColor} bg-opacity-20 ${borderColor.replace('500', '100').replace('border-','bg-')} py-1 px-2 rounded-full flex-shrink-0">${item.note}</span>
+                            </div>
+                            <p class="text-stone-600 mt-2 text-sm">${item.desc}</p>
                         </div>
-                        <p class="text-stone-600 mt-2">${item.desc}</p>
+                        <p class="text-right font-bold mt-2 text-lg ${textColor}">${item.price}</p>
                     `;
                     recommendContainer.appendChild(card);
                 });
@@ -393,7 +453,7 @@
                         btn.classList.add('bg-amber-600', 'text-white'); btn.classList.remove('bg-white');
                         allCards.forEach(card => {
                             if (filter === 'all' || card.dataset.filter === filter || card.dataset.filter.startsWith(filter)) {
-                                card.style.display = 'block';
+                                card.style.display = 'flex';
                             } else { card.style.display = 'none'; }
                         });
                     });
@@ -457,6 +517,7 @@
             initTabs();
             createItinerary();
             createPrepAccordion();
+            createTipsAccordion();
             createRecommendations();
             initFilters();
             initFoodRecommendation();
