@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>포르투갈 여행 가이드</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (Beige, Warm Gray, Terracotta Accent) -->
+    <!-- Application Structure Plan: The application is structured as a tabbed, single-page application (SPA) to provide a non-linear, task-oriented user experience. Instead of forcing the user to scroll through a long document, this structure allows them to instantly access the information they need, whether it's the daily itinerary, pre-trip preparations, or specific recommendations. The main sections are 'Itinerary Overview', 'Key Preparations', 'Recommendations', and 'Travel Tips'. This is more intuitive for a traveler who might need different information at different stages of their journey (planning vs. on-the-ground). The itinerary uses expandable cards to manage information density, while preparations use accordions. Recommendations are filterable, empowering the user to quickly find relevant options. This design prioritizes ease of use and quick information retrieval, which is ideal for the target user. -->
+    <!-- Visualization & Content Choices: 
+        - Itinerary (Table to Interactive Cards): Goal: Organize/Inform. Method: HTML/Tailwind cards with JS for click-to-expand. Justification: More engaging and less overwhelming than a large table. Shows high-level info first, with details on demand.
+        - Weather Comparison (Text to Bar Chart): Goal: Compare. Method: Chart.js Bar Chart. Justification: Visually represents the temperature difference between key cities far more effectively than text, reinforcing the packing advice.
+        - Driving Time (Text to Bar Chart): Goal: Compare. Method: Chart.js Bar Chart. Justification: Clearly illustrates the estimated driving times between cities for the road trip portion of the journey.
+        - City Card Analysis (Text to Donut Charts): Goal: Compare/Inform. Method: Chart.js Donut Charts. Justification: Provides a compelling visual breakdown of costs vs. benefits for city passes, aiding in economic decision-making.
+        - Recommendations (List to Filterable Gallery): Goal: Organize/Inform. Method: HTML/Tailwind cards with JS filtering. Justification: Allows the user to dynamically narrow down options by city and type (food/stay), which is significantly more functional than a static list.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #FDFBF5; }
+        .tab-active { border-color: #D97706; color: #D97706; background-color: #FFFBEB; }
+        .tab-inactive { border-color: transparent; color: #57534E; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
+        .recommendation-card { display: block; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .gemini-btn {
+            background: linear-gradient(45deg, #f9a8d4, #f472b6);
+            transition: all 0.3s ease;
+        }
+        .gemini-btn:hover {
+            box-shadow: 0 0 15px rgba(244, 114, 182, 0.5);
+        }
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #f472b6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none; /* Initially hidden */
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-5xl font-bold text-amber-700">포르투갈 여행 가이드</h1>
+            <p class="text-lg md:text-xl text-stone-600 mt-2">자유로운 렌터카 여행과 함께하는 지능형 가이드</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center border-b-2 border-stone-200 mb-8">
+            <button data-target="itinerary" class="tab-btn text-sm md:text-base font-semibold py-3 px-4 md:px-6 border-b-2 transition-colors duration-300 tab-active">🗓️ 여정 한눈에 보기</button>
+            <button data-target="prep" class="tab-btn text-sm md:text-base font-semibold py-3 px-4 md:px-6 border-b-2 transition-colors duration-300 tab-inactive">📋 핵심 준비사항</button>
+            <button data-target="recommend" class="tab-btn text-sm md:text-base font-semibold py-3 px-4 md:px-6 border-b-2 transition-colors duration-300 tab-inactive">🏨 맛집 & 숙소</button>
+            <button data-target="tips" class="tab-btn text-sm md:text-base font-semibold py-3 px-4 md:px-6 border-b-2 transition-colors duration-300 tab-inactive">💡 여행 팁 & 분석</button>
+        </nav>
+
+        <main>
+            <section id="itinerary" class="content-section active">
+                <div class="text-center mb-8 p-4 bg-amber-50 rounded-lg">
+                    <h2 class="text-2xl font-bold text-amber-800 mb-2">9박 10일 여정 계획</h2>
+                    <p class="text-stone-700">리스본에서 시작하여 아베이루, 포르투를 거쳐 스페인 빌바오에서 마무리되는 여정입니다. 각 날짜 카드를 클릭하여 상세 계획과 AI 추천 활동을 확인해 보세요.</p>
+                </div>
+                <div id="itinerary-container" class="space-y-4"></div>
+            </section>
+
+            <section id="prep" class="content-section">
+                 <div class="text-center mb-8 p-4 bg-amber-50 rounded-lg">
+                    <h2 class="text-2xl font-bold text-amber-800 mb-2">여행 전 필수 체크리스트</h2>
+                    <p class="text-stone-700">성공적인 여행을 위해 꼭 필요한 실용적인 정보들을 모았습니다. 날씨부터 교통, 안전 수칙까지 꼼꼼히 확인하여 완벽한 여정을 준비하세요.</p>
+                </div>
+                <div id="prep-accordion-container" class="space-y-3"></div>
+            </section>
+
+            <section id="recommend" class="content-section">
+                <div class="text-center mb-8 p-4 bg-amber-50 rounded-lg">
+                    <h2 class="text-2xl font-bold text-amber-800 mb-2">엄선된 추천 목록</h2>
+                    <p class="text-stone-700">최고의 미식 경험과 편안한 휴식을 위해 엄선한 맛집과 숙소 목록입니다. 아래 버튼으로 도시와 종류를 선택하여 원하는 정보를 쉽게 찾아보세요.</p>
+                </div>
+                <!-- Gemini Culinary Explorer -->
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-pink-500">
+                    <h3 class="text-xl font-bold text-pink-700 mb-3">✨ AI 셰프의 메뉴 추천</h3>
+                    <p class="text-sm text-stone-600 mb-4">어떤 음식을 먹을지 고민되시나요? "빌바오 스타일 타파스", "따뜻한 해물 스튜" 등 원하는 음식 스타일을 입력하고 AI에게 메뉴를 추천받아 보세요!</p>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="food-preference-input" placeholder="예: 따뜻한 수프" class="flex-grow p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-pink-400 focus:border-transparent">
+                        <button id="get-food-recommendation-btn" class="gemini-btn text-white font-bold py-2 px-4 rounded-md flex items-center justify-center">
+                            <span>메뉴 추천받기</span>
+                            <div class="loader ml-2"></div>
+                        </button>
+                    </div>
+                    <div id="food-recommendation-output" class="mt-4 p-4 bg-pink-50 rounded-lg prose prose-sm max-w-none hidden"></div>
+                </div>
+
+                <div class="flex justify-center flex-wrap gap-2 mb-8">
+                    <button class="filter-btn bg-amber-600 text-white py-2 px-4 rounded-full" data-filter="all">전체 보기</button>
+                    <button class="filter-btn bg-white border border-amber-600 text-amber-700 py-2 px-4 rounded-full" data-filter="lisbon-food">리스본 맛집</button>
+                    <button class="filter-btn bg-white border border-amber-600 text-amber-700 py-2 px-4 rounded-full" data-filter="lisbon-stay">리스본 숙소</button>
+                    <button class="filter-btn bg-white border border-green-600 text-green-700 py-2 px-4 rounded-full" data-filter="aveiro-all">아베이루</button>
+                    <button class="filter-btn bg-white border border-blue-600 text-blue-700 py-2 px-4 rounded-full" data-filter="porto-food">포르투 맛집</button>
+                    <button class="filter-btn bg-white border border-blue-600 text-blue-700 py-2 px-4 rounded-full" data-filter="porto-stay">포르투 숙소</button>
+                    <button class="filter-btn bg-white border border-red-600 text-red-700 py-2 px-4 rounded-full" data-filter="bilbao-food">빌바오 맛집</button>
+                    <button class="filter-btn bg-white border border-red-600 text-red-700 py-2 px-4 rounded-full" data-filter="bilbao-stay">빌바오 숙소</button>
+                </div>
+                <div id="recommend-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+            
+            <section id="tips" class="content-section">
+                <div class="text-center mb-8 p-4 bg-amber-50 rounded-lg">
+                    <h2 class="text-2xl font-bold text-amber-800 mb-2">여행 전문가의 심층 분석</h2>
+                    <p class="text-stone-700">더욱 경제적이고 깊이 있는 여행을 위한 전문가의 분석 정보입니다. 각 도시의 여행자 카드 구매 여부를 결정하는 데 도움을 드립니다.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-center mb-4 text-amber-700">리스본 카드 분석</h3>
+                        <div class="chart-container h-64 md:h-72"><canvas id="lisbonCardChart"></canvas></div>
+                        <p class="mt-4 text-sm text-stone-600">
+                            <b>결론: 편의성을 고려하면 구매 가치 있음.</b><br>
+                            순수 비용 절감 효과는 크지 않으나, 매번 표를 구매하는 번거로움 없이 대중교통을 이용할 수 있다는 점이 큰 장점입니다.
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-center mb-4 text-blue-700">포르투 카드 분석</h3>
+                        <div class="chart-container h-64 md:h-72"><canvas id="portoCardChart"></canvas></div>
+                        <p class="mt-4 text-sm text-stone-600">
+                           <b>결론: 구매 비추천.</b><br>
+                           핵심 명소 할인이 적어 대중교통 전용 '안단테 투어 카드'를 구매하고, 입장권은 개별 구매하는 것이 더 경제적입니다.
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-center mb-4 text-red-700">빌바오 카드 분석</h3>
+                        <div class="chart-container h-64 md:h-72"><canvas id="bilbaoCardChart"></canvas></div>
+                        <p class="mt-4 text-sm text-stone-600">
+                           <b>결론: 구겐하임 방문 시 추천.</b><br>
+                           교통편과 함께 구겐하임 미술관 입장권이 포함되어 있어 매우 편리합니다. 미술관 방문 계획이 있다면 구매를 적극 추천합니다.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+    </div>
+
+    <script>
+        const appData = {
+            itinerary: [
+                { day: 1, city: '리스본', cityForPrompt: 'Lisbon', theme: '도착 및 바이샤 지구 산책', details: `공항 도착 후 택시/우버 또는 공항버스(Aerobus)를 이용해 숙소로 이동합니다. 긴 비행 후의 피로를 고려하여 대중교통보다는 편안한 이동을 추천합니다. 숙소에 짐을 푼 뒤, 바이샤 지구를 산책하며 리스본의 첫인상을 느껴보세요.` },
+                { day: 2, city: '리스본', cityForPrompt: 'Lisbon', theme: '벨렝 지구와 대항해시대의 황금기', details: `대중교통을 이용하거나, 주차의 편의성을 고려해 우버/택시로 벨렝 지구로 이동합니다. 제로니무스 수도원(온라인 예매 필수) 방문 후, 원조 에그타르트 맛집 파스테이스 드 벨렝을 맛봅니다.` },
+                { day: 3, city: '리스본', cityForPrompt: 'Lisbon', theme: '알파마의 영혼, 미로와 파두', details: `알파마 지구는 길이 좁고 복잡하므로 도보나 대중교통 이용을 추천합니다. 상 조르제 성과 전망대들을 둘러본 후, 저녁에는 예약한 파두 하우스에서 공연과 식사를 즐깁니다.` },
+                { day: 4, city: '리스본 > 아베이루', cityForPrompt: 'Aveiro', theme: '포르투갈의 베네치아로 드라이브', details: `오전에 리스본 시내(또는 편의에 따라 공항)에서 렌터카를 수령하여 아베이루로 이동합니다 (약 2.5시간 소요). '비아 베르데' 장치 부착 여부를 확인하고, 본격적인 자동차 여행을 시작합니다. 도착 후 운하에서 몰리세이루 배를 타며 낭만적인 오후를 보냅니다.` },
+                { day: 5, city: '아베이루 > 포르투', cityForPrompt: 'Porto', theme: '줄무늬 마을과 포르투의 첫 만남', details: `오전에 코스타 노바의 다채로운 줄무늬 집들을 구경합니다. 오후에 포르투로 이동하여 (약 1시간 소요) 숙소에 주차합니다. 저녁에는 히베이라 지구를 산책하며 동 루이스 1세 다리의 야경을 감상합니다.` },
+                { day: 6, city: '포르투', cityForPrompt: 'Porto', theme: '포르투의 심장부 탐방', details: `시내는 주차가 어렵고 도보 이동이 편리합니다. 숙소에 차를 두고 상 벤투 기차역, 렐루 서점(온라인 예매 필수), 클레리구스 탑 등을 둘러봅니다. 오후에는 가이아 지구로 넘어가 노을을 감상합니다.` },
+                { day: 7, city: '포르투', cityForPrompt: 'Porto', theme: '도루 강변의 향기, 포트 와인 체험', details: `도보나 대중교통으로 빌라 노바 드 가이아의 와이너리를 방문하여 투어와 테이스팅을 즐깁니다. 저녁에는 포르투 명물 요리 프란세지냐에 도전합니다. 이후 렌터카를 포르투 공항에 반납합니다.` },
+                { day: 8, city: '포르투 > 빌바오', cityForPrompt: 'Bilbao', theme: '예술의 도시로 이동', details: `오전에 포르투 공항으로 이동하여 빌바오행 항공편에 탑승합니다 (비행시간 약 1시간). 빌바오 도착 후 숙소 체크인, 구시가지(Casco Viejo)를 산책하며 핀초(Pintxos) 바로 저녁을 해결합니다.` },
+                { day: 9, city: '빌바오', cityForPrompt: 'Bilbao', theme: '구겐하임과 현대 건축의 미학', details: `오전에는 빌바오의 상징, 구겐하임 미술관을 집중적으로 관람합니다. 오후에는 네르비온 강변을 따라 산책하며 수비수리 다리 등 현대적인 건축물들을 감상합니다.` },
+                { day: 10, city: '빌바오', cityForPrompt: 'Bilbao', theme: '출국', details: `오전에 가장 마음에 들었던 장소를 다시 방문하거나 기념품 쇼핑을 즐깁니다. 오후에 빌바오 공항으로 이동하여 한국으로 출발합니다. ¡Buen viaje!` },
+            ],
+            prep: [
+                {
+                    title: '🌤️ 9월 날씨와 옷차림',
+                    content: `9월은 여행 최적기입니다. 전반적으로 쾌적하지만 도시별 차이가 있습니다. <div class="my-4 p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">리스본:</h4><p>낮 20~28°C로 따스하고 쾌적합니다. 저녁에는 기온이 내려가므로 가벼운 외투는 필수입니다.</p></div><div class="p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">포르투 & 빌바오:</h4><p>낮 14~24°C로 리스본보다 서늘하며 일교차가 큽니다. 겹쳐 입을 수 있는 옷(스웨터, 바람막이)을 준비하세요.</p></div><div class="mt-4"><h4 class="font-bold">핵심 준비물:</h4><ul class="list-disc list-inside"><li><b>신발:</b> 운전 외에도 걷는 시간이 많으므로, 발이 편한 운동화/워킹화는 필수입니다.</li><li><b>액세서리:</b> 햇살이 강하므로 선크림, 모자, 선글라스를 꼭 챙기세요.</li></ul></div><div class="mt-6"><div class="chart-container"><canvas id="weatherChart"></canvas></div><p class="text-center text-xs text-stone-500 mt-1">포르투와 빌바오는 리스본보다 서늘하므로 겹쳐 입을 옷을 준비하는 것이 좋습니다.</p></div>`
+                },
+                {
+                    title: '🚗 교통 (렌터카/항공)',
+                    content: `자유로운 이동을 위한 정보입니다. <div class="my-4 p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">렌터카 (리스본-포르투):</h4><p>리스본에서의 일정을 마친 후 시내 지점에서 렌트하여 포르투 공항에서 반납하는 편도 렌트가 효율적입니다. 국제운전면허증은 필수이며, 자동변속기 차량은 미리 예약해야 합니다.</p></div><div class="my-4 p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">고속도로 통행료 (Via Verde):</h4><p>렌터카 계약 시 '비아 베르데(Via Verde)' 전자 통행료 장치를 추가하면, 요금소에서 멈출 필요 없이 하이패스처럼 통과하고 나중에 한 번에 정산할 수 있어 매우 편리합니다.</p></div><div class="my-4 p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">주차:</h4><p>리스본, 포르투의 역사 지구는 주차가 매우 어렵고 비쌉니다. 주차장이 제공되는 숙소를 예약하거나, 시 외곽에 주차 후 대중교통을 이용하는 것이 좋습니다.</p></div><div class="mt-6"><div class="chart-container"><canvas id="drivingTimeChart"></canvas></div><p class="text-center text-xs text-stone-500 mt-1">도시 간 예상 운전 시간 (휴식 시간 제외)</p></div><div class="mt-4 p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">항공 (포르투-빌바오):</h4><p>포르투에서 빌바오 구간은 저가 항공사(예: Vueling, Volotea)를 이용하면 1시간 내외로 빠르고 경제적으로 이동할 수 있습니다.</p></div>`
+                },
+                {
+                    title: '💡 안전 및 기타 팁',
+                    content: `안전하고 즐거운 여행을 위한 전문가의 조언입니다. <div class="my-4 p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">차량 내 소지품:</h4><p>주차 시, 귀중품은 물론 가방 등 어떤 짐도 차 안에 보이게 두지 마세요. 차량털이의 표적이 될 수 있습니다.</p></div><div class="my-4 p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">화폐 및 결제:</h4><p>유로(€)를 사용합니다. 대부분 카드 사용이 가능하지만, 작은 상점이나 핀초 바를 위해 소액의 현금을 준비하세요.</p></div><div class="my-4 p-4 border border-stone-200 rounded-lg bg-stone-50"><h4 class="font-bold">식당 문화:</h4><p>포르투갈의 쿠베르(유료 식전빵)와 스페인의 핀초(작은 타파스) 문화를 경험해보세요.</p></div>`
+                }
+            ],
+            recommendations: [
+                { id: 1, city: 'lisbon', type: 'food', name: 'Cervejaria Ramiro', desc: `앤서니 보딘도 극찬한 최고의 해산물 식당. 예약 필수.`, note: '해산물' },
+                { id: 2, city: 'lisbon', type: 'stay', name: 'Hotel da Baixa', desc: `바이샤 중심 위치. 주차는 인근 공영주차장 이용.`, note: '4성급 / 위치' },
+                { id: 3, city: 'aveiro', type: 'food', name: 'Maré Cheia', desc: `신선한 해산물 스튜(Caldeirada)가 일품인 현지 맛집.`, note: '해산물' },
+                { id: 4, city: 'aveiro', type: 'stay', name: 'Hotel Moliceiro', desc: `중앙 운하 바로 앞에 위치한 로맨틱한 4성급 호텔. 주차 가능.`, note: '4성급 / 전망' },
+                { id: 5, city: 'porto', type: 'food', name: 'Tapabento', desc: `창의적인 해산물 요리. 예약이 매우 어렵지만 강력 추천.`, note: '해산물/현대' },
+                { id: 6, city: 'porto', type: 'stay', name: 'Pestana Vintage Porto', desc: `히베이라 강변의 환상적인 전망. 주차는 제휴 주차장 이용.`, note: '5성급 / 전망' },
+                { id: 7, city: 'bilbao', type: 'food', name: 'Gure Toki', desc: `누에바 광장에 위치한 혁신적인 핀초 바로 현지인에게 인기.`, note: '핀초 바' },
+                { id: 8, city: 'bilbao', type: 'food', name: 'La Viña del Ensanche', desc: `1927년부터 이어진 전통 있는 레스토랑. 하몽과 와인이 유명.`, note: '전통/하몽' },
+                { id: 9, city: 'bilbao', type: 'stay', name: 'Gran Hotel Domine', desc: `구겐하임 미술관 맞은편, 최고의 전망을 자랑하는 5성급 호텔. 주차 가능.`, note: '5성급 / 전망' },
+                { id: 10, city: 'bilbao', type: 'stay', name: 'Hotel Miró', desc: `구겐하임 근처의 세련된 디자인을 자랑하는 부티크 호텔. 주차 가능.`, note: '4성급 / 디자인' },
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.content-section');
+            const itineraryContainer = document.getElementById('itinerary-container');
+            const prepAccordionContainer = document.getElementById('prep-accordion-container');
+            const recommendContainer = document.getElementById('recommend-container');
+            const filterBtns = document.querySelectorAll('.filter-btn');
+
+            let weatherChartInstance, drivingTimeChartInstance, lisbonCardChartInstance, portoCardChartInstance, bilbaoCardChartInstance;
+
+            async function getGeminiResponse(prompt) {
+                const apiKey = "AIzaSyACAoKxi4NsWm-zstIVpXLTh4apZmGz7Z0";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+                try {
+                    const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (!response.ok) { return "죄송합니다. AI 추천을 가져오는 데 문제가 발생했습니다."; }
+                    const result = await response.json();
+                    if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts) {
+                        return result.candidates[0].content.parts[0].text;
+                    } else { return "AI로부터 유효한 답변을 받지 못했습니다."; }
+                } catch (error) { return "네트워크 오류로 AI 추천을 가져올 수 없습니다."; }
+            }
+
+            function initTabs() {
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        tabs.forEach(item => { item.classList.remove('tab-active'); item.classList.add('tab-inactive'); });
+                        tab.classList.add('tab-active'); tab.classList.remove('tab-inactive');
+                        const target = tab.getAttribute('data-target');
+                        contents.forEach(content => {
+                            content.classList.remove('active');
+                            if (content.id === target) { content.classList.add('active'); }
+                        });
+                        if (target === 'prep') { createWeatherChart(); createDrivingTimeChart(); }
+                        else if (target === 'tips') { createLisbonCardChart(); createPortoCardChart(); createBilbaoCardChart(); }
+                    });
+                });
+            }
+
+            function createItinerary() {
+                itineraryContainer.innerHTML = '';
+                appData.itinerary.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'border border-stone-200 rounded-lg shadow-sm overflow-hidden bg-white';
+                    card.innerHTML = `
+                        <div class="p-4 flex justify-between items-center transition-colors duration-300 hover:bg-amber-50 cursor-pointer itinerary-header">
+                            <div class="flex items-center">
+                                <span class="text-xl font-bold text-amber-600 w-12 text-center">${item.day}일차</span>
+                                <div class="ml-4">
+                                    <p class="font-semibold text-stone-800">${item.city}</p>
+                                    <p class="text-sm text-stone-500">${item.theme}</p>
+                                </div>
+                            </div>
+                            <span class="text-amber-600 transform transition-transform duration-300 expand-icon">&#9662;</span>
+                        </div>
+                        <div class="accordion-content">
+                            <div class="p-4 border-t border-stone-200 bg-stone-50 text-stone-700">
+                                <p>${item.details}</p>
+                                <div class="mt-4">
+                                    <button class="gemini-btn text-white text-sm font-bold py-2 px-3 rounded-md flex items-center get-activity-recommendation-btn" data-city="${item.cityForPrompt}" data-theme="${item.theme}">
+                                        <span>✨ AI 활동 추천</span>
+                                        <div class="loader ml-2"></div>
+                                    </button>
+                                </div>
+                                <div class="activity-recommendation-output mt-4 p-3 bg-white rounded-lg prose prose-sm max-w-none hidden"></div>
+                            </div>
+                        </div>
+                    `;
+                    itineraryContainer.appendChild(card);
+                    
+                    card.querySelector('.itinerary-header').addEventListener('click', () => {
+                        const content = card.querySelector('.accordion-content');
+                        const icon = card.querySelector('.expand-icon');
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null; icon.style.transform = 'rotate(0deg)';
+                        } else {
+                            content.style.maxHeight = content.scrollHeight + 'px'; icon.style.transform = 'rotate(180deg)';
+                        }
+                    });
+
+                    card.querySelector('.get-activity-recommendation-btn').addEventListener('click', async (e) => {
+                        const button = e.currentTarget;
+                        const loader = button.querySelector('.loader');
+                        const outputDiv = card.querySelector('.activity-recommendation-output');
+                        loader.style.display = 'inline-block'; button.disabled = true;
+                        const city = button.dataset.city;
+                        const theme = button.dataset.theme;
+                        const prompt = `저는 59세 한국인 여행자입니다. 현재 ${city}에 있으며, 오늘의 여행 테마는 '${theme}'입니다. 이 테마에 맞춰, 여유롭고 문화적으로 깊이 있는 활동 2가지를 추천해주세요. 각 활동에 대한 간단한 설명과 왜 50대 여행자에게 적합한지 이유를 포함해주세요. 결과는 마크다운 리스트 형식으로 간결하게 보여주세요.`;
+                        const result = await getGeminiResponse(prompt);
+                        outputDiv.innerHTML = result.replace(/\n/g, '<br>');
+                        outputDiv.style.display = 'block';
+                        const content = card.querySelector('.accordion-content');
+                        if (content.style.maxHeight) { content.style.maxHeight = content.scrollHeight + 'px'; }
+                        loader.style.display = 'none'; button.disabled = false;
+                    });
+                });
+            }
+            
+            function createPrepAccordion() {
+                prepAccordionContainer.innerHTML = '';
+                appData.prep.forEach(item => {
+                    const accordion = document.createElement('div');
+                    accordion.className = 'border border-stone-200 rounded-lg shadow-sm overflow-hidden bg-white';
+                    accordion.innerHTML = `
+                        <div class="p-4 flex justify-between items-center cursor-pointer transition-colors duration-300 hover:bg-amber-50">
+                            <h3 class="text-lg font-semibold text-stone-800">${item.title}</h3>
+                            <span class="text-amber-600 transform transition-transform duration-300">&#9662;</span>
+                        </div>
+                        <div class="accordion-content">
+                             <div class="p-4 border-t border-stone-200 bg-stone-50 text-stone-700">
+                                ${item.content}
+                            </div>
+                        </div>
+                    `;
+                    prepAccordionContainer.appendChild(accordion);
+                    accordion.querySelector('.p-4').addEventListener('click', () => {
+                        const content = accordion.querySelector('.accordion-content');
+                        const icon = accordion.querySelector('.text-amber-600.transform');
+                        if (content.style.maxHeight) {
+                            content.style.maxHeight = null; icon.style.transform = 'rotate(0deg)';
+                        } else {
+                            content.style.maxHeight = content.scrollHeight + 'px'; icon.style.transform = 'rotate(180deg)';
+                        }
+                    });
+                });
+            }
+
+            function createRecommendations() {
+                recommendContainer.innerHTML = '';
+                appData.recommendations.forEach(item => {
+                    let borderColor, textColor;
+                    if (item.city === 'lisbon') { borderColor = 'border-amber-500'; textColor = 'text-amber-700';
+                    } else if (item.city === 'porto') { borderColor = 'border-blue-500'; textColor = 'text-blue-700';
+                    } else if (item.city === 'aveiro') { borderColor = 'border-green-500'; textColor = 'text-green-700';
+                    } else { borderColor = 'border-red-500'; textColor = 'text-red-700'; }
+
+                    const card = document.createElement('div');
+                    card.className = `recommendation-card border-l-4 ${borderColor} bg-white p-4 rounded-lg shadow-md transition-transform duration-300 hover:scale-105`;
+                    card.dataset.filter = `${item.city}-${item.type}`;
+                    if(item.city === 'aveiro') card.dataset.filter = 'aveiro-all';
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                             <h4 class="text-lg font-bold text-stone-800">${item.name}</h4>
+                             <span class="text-xs font-semibold ${textColor} bg-opacity-20 ${borderColor.replace('500', '100').replace('border-','bg-')} py-1 px-2 rounded-full">${item.note}</span>
+                        </div>
+                        <p class="text-stone-600 mt-2">${item.desc}</p>
+                    `;
+                    recommendContainer.appendChild(card);
+                });
+            }
+            
+            function initFoodRecommendation() {
+                const button = document.getElementById('get-food-recommendation-btn');
+                const input = document.getElementById('food-preference-input');
+                const outputDiv = document.getElementById('food-recommendation-output');
+                const loader = button.querySelector('.loader');
+                button.addEventListener('click', async () => {
+                    const preference = input.value.trim();
+                    if (!preference) {
+                        outputDiv.innerHTML = "먼저 원하는 음식 스타일을 입력해주세요.";
+                        outputDiv.style.display = 'block'; return;
+                    }
+                    loader.style.display = 'inline-block'; button.disabled = true;
+                    const prompt = `포르투갈이나 스페인 북부(바스크) 여행 중인 59세 한국인입니다. 지금 '${preference}' 같은 음식이 먹고 싶습니다. 이 취향에 맞는 포르투갈 또는 바스크 음식 한 가지를 추천해주세요. 음식에 대한 간단한 설명과 어떤 종류의 식당에서 찾을 수 있는지 알려주세요. 답변은 친절하고 간결하게 해주세요.`;
+                    const result = await getGeminiResponse(prompt);
+                    outputDiv.innerHTML = result.replace(/\n/g, '<br>');
+                    outputDiv.style.display = 'block';
+                    loader.style.display = 'none'; button.disabled = false;
+                });
+            }
+
+            function initFilters() {
+                filterBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const filter = btn.dataset.filter;
+                        const allCards = document.querySelectorAll('.recommendation-card');
+                        filterBtns.forEach(b => { b.classList.remove('bg-amber-600', 'text-white'); b.classList.add('bg-white'); });
+                        btn.classList.add('bg-amber-600', 'text-white'); btn.classList.remove('bg-white');
+                        allCards.forEach(card => {
+                            if (filter === 'all' || card.dataset.filter === filter || card.dataset.filter.startsWith(filter)) {
+                                card.style.display = 'block';
+                            } else { card.style.display = 'none'; }
+                        });
+                    });
+                });
+            }
+
+            const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } };
+            
+            function createWeatherChart() {
+                if (weatherChartInstance) return;
+                const ctx = document.getElementById('weatherChart').getContext('2d');
+                weatherChartInstance = new Chart(ctx, { type: 'bar', data: {
+                        labels: ['리스본', '포르투', '빌바오'],
+                        datasets: [
+                            { label: '평균 최고기온 (°C)', data: [28, 24, 23], backgroundColor: 'rgba(255, 159, 64, 0.6)'},
+                            { label: '평균 최저기온 (°C)', data: [20, 14, 14], backgroundColor: 'rgba(54, 162, 235, 0.6)'}
+                        ]
+                    }, options: chartOptions });
+            }
+
+            function createDrivingTimeChart() {
+                if (drivingTimeChartInstance) return;
+                const ctx = document.getElementById('drivingTimeChart').getContext('2d');
+                drivingTimeChartInstance = new Chart(ctx, { type: 'bar', data: {
+                        labels: ['리스본 → 아베이루', '아베이루 → 포르투'],
+                        datasets: [
+                            { label: '예상 운전 시간 (시간)', data: [2.5, 1], backgroundColor: 'rgba(75, 192, 192, 0.6)' }
+                        ]
+                    }, options: chartOptions });
+            }
+            
+            const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } };
+
+            function createLisbonCardChart() {
+                if (lisbonCardChartInstance) return;
+                const ctx = document.getElementById('lisbonCardChart').getContext('2d');
+                lisbonCardChartInstance = new Chart(ctx, { type: 'doughnut', data: {
+                        labels: ['리스본 카드 (48h)', '개별 구매 시 예상 비용'],
+                        datasets: [{ data: [47, 40], backgroundColor: ['rgba(255, 206, 86, 0.7)', 'rgba(217, 119, 6, 0.7)'], hoverOffset: 4 }]
+                    }, options: doughnutOptions });
+            }
+
+            function createPortoCardChart() {
+                if (portoCardChartInstance) return;
+                 const ctx = document.getElementById('portoCardChart').getContext('2d');
+                 portoCardChartInstance = new Chart(ctx, { type: 'doughnut', data: {
+                        labels: ['포르투 카드+교통 (48h)', '교통카드+개별 구매 시 예상'],
+                        datasets: [{ data: [20, 18], backgroundColor: ['rgba(153, 102, 255, 0.7)', 'rgba(54, 162, 235, 0.7)'], hoverOffset: 4 }]
+                    }, options: doughnutOptions });
+            }
+            
+            function createBilbaoCardChart() {
+                if (bilbaoCardChartInstance) return;
+                 const ctx = document.getElementById('bilbaoCardChart').getContext('2d');
+                 bilbaoCardChartInstance = new Chart(ctx, { type: 'doughnut', data: {
+                        labels: ['빌바오 카드 (48h)', '개별 구매 시 예상 비용'],
+                        datasets: [{ data: [35, 42], backgroundColor: ['rgba(239, 68, 68, 0.7)', 'rgba(217, 119, 6, 0.7)'], hoverOffset: 4 }]
+                    }, options: doughnutOptions });
+            }
+            
+            initTabs();
+            createItinerary();
+            createPrepAccordion();
+            createRecommendations();
+            initFilters();
+            initFoodRecommendation();
+        });
+    </script>
+</body>
+</html>
