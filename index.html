@@ -91,12 +91,12 @@
                 </div>
                 <!-- Gemini Culinary Explorer -->
                 <div class="bg-white p-6 rounded-lg shadow-md mb-8 border-l-4 border-pink-500">
-                    <h3 class="text-xl font-bold text-pink-700 mb-3">✨ AI 셰프의 메뉴 추천</h3>
-                    <p class="text-sm text-stone-600 mb-4">어떤 음식을 먹을지 고민되시나요? "빌바오 스타일 타파스", "따뜻한 해물 스튜" 등 원하는 음식 스타일을 입력하고 AI에게 메뉴를 추천받아 보세요!</p>
+                    <h3 class="text-xl font-bold text-pink-700 mb-3">✨ AI 실시간 맛집 검색</h3>
+                    <p class="text-sm text-stone-600 mb-4">찾고 싶은 음식 종류나 식당 이름을 입력해 보세요. AI가 현지에서 실제 운영 중인 맛집을 찾아 추천해 드립니다.</p>
                     <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="food-preference-input" placeholder="예: 따뜻한 수프" class="flex-grow p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-pink-400 focus:border-transparent">
+                        <input type="text" id="food-preference-input" placeholder="예: 리스본 해물밥 맛집, 빌바오 한식당" class="flex-grow p-2 border border-stone-300 rounded-md focus:ring-2 focus:ring-pink-400 focus:border-transparent">
                         <button id="get-food-recommendation-btn" class="gemini-btn text-white font-bold py-2 px-4 rounded-md flex items-center justify-center">
-                            <span>메뉴 추천받기</span>
+                            <span>맛집 검색하기</span>
                             <div class="loader ml-2"></div>
                         </button>
                     </div>
@@ -205,7 +205,7 @@
             let weatherChartInstance, drivingTimeChartInstance, lisbonCardChartInstance, portoCardChartInstance, bilbaoCardChartInstance;
 
             async function getGeminiResponse(prompt) {
-                const apiKey = "AIzaSyACAoKxi4NsWm-zstIVpXLTh4apZmGz7Z0";
+                const apiKey = "AIzaSyACAoKxi4NsWm-zstIVpXLTh4apZmGz7Z0"; // 보안을 위해 비워두고, 사용 시점에 실제 키를 붙여넣으세요.
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
                 const payload = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
                 try {
@@ -355,11 +355,11 @@
                 button.addEventListener('click', async () => {
                     const preference = input.value.trim();
                     if (!preference) {
-                        outputDiv.innerHTML = "먼저 원하는 음식 스타일을 입력해주세요.";
+                        outputDiv.innerHTML = "먼저 원하는 음식이나 식당을 입력해주세요.";
                         outputDiv.style.display = 'block'; return;
                     }
                     loader.style.display = 'inline-block'; button.disabled = true;
-                    const prompt = `포르투갈이나 스페인 북부(바스크) 여행 중인 59세 한국인입니다. 지금 '${preference}' 같은 음식이 먹고 싶습니다. 이 취향에 맞는 포르투갈 또는 바스크 음식 한 가지를 추천해주세요. 음식에 대한 간단한 설명과 어떤 종류의 식당에서 찾을 수 있는지 알려주세요. 답변은 친절하고 간결하게 해주세요.`;
+                    const prompt = `You are a helpful local guide for a 59-year-old Korean traveler in Portugal or Northern Spain. The traveler wants to find a restaurant. Based on their search query, recommend 1-2 specific, real restaurants. For each recommendation, provide the restaurant's name and a brief, appealing description of why it's a good choice. The traveler's search query is: '${preference}'. Please provide the answer in a clear, easy-to-read list format in Korean.`;
                     const result = await getGeminiResponse(prompt);
                     outputDiv.innerHTML = result.replace(/\n/g, '<br>');
                     outputDiv.style.display = 'block';
