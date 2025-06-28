@@ -436,7 +436,7 @@
                         outputDiv.style.display = 'block'; return;
                     }
                     loader.style.display = 'inline-block'; button.disabled = true;
-                    const prompt = `You are a helpful local guide for a 59-year-old Korean traveler in Portugal or Northern Spain. The traveler wants to find a restaurant. Based on their search query, recommend 1-2 specific, real restaurants. For each recommendation, provide the restaurant's name and a brief, appealing description of why it's a good choice. The traveler's search query is: '${preference}'. Respond in Korean. Crucially, your entire response must be plain text without any Markdown formatting (do not use *, #, **, etc.).`;
+                    const prompt = `You are a helpful local guide for a 59-year-old Korean traveler in Portugal or Northern Spain. The traveler wants to find a restaurant. Based on their search query, recommend a minimum of 4 and a maximum of 6 specific, real restaurants. For each recommendation, provide the restaurant's name and a brief, appealing description of why it's a good choice. The traveler's search query is: '${preference}'. Respond in Korean. Crucially, your entire response must be plain text without any Markdown formatting (do not use *, #, **, etc.).`;
                     const result = await getGeminiResponse(prompt);
                     outputDiv.innerHTML = stripMarkdown(result);
                     outputDiv.style.display = 'block';
