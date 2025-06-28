@@ -204,6 +204,23 @@
 
             let weatherChartInstance, drivingTimeChartInstance, lisbonCardChartInstance, portoCardChartInstance, bilbaoCardChartInstance;
 
+            function stripMarkdown(text) {
+                if (!text) return '';
+                let output = text;
+                // Remove headers (e.g., #, ##)
+                output = output.replace(/^#+\s*/gm, '');
+                // Remove bold/italic markers but keep the text
+                output = output.replace(/(\*\*|__)(.*?)\1/g, '$2'); // Bold
+                output = output.replace(/(\*|_)(.*?)\1/g, '$2');   // Italic
+                // Remove list markers (unordered) but keep the text
+                output = output.replace(/^\s*[\*\-]\s/gm, '');
+                // Remove links but keep the text
+                output = output.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1');
+                // Convert newlines to <br> for HTML display
+                output = output.replace(/\n/g, '<br>');
+                return output;
+            }
+
             async function getGeminiResponse(prompt) {
                 const apiKey = "AIzaSyACAoKxi4NsWm-zstIVpXLTh4apZmGz7Z0"; // 보안을 위해 비워두고, 사용 시점에 실제 키를 붙여넣으세요.
                 const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
@@ -282,9 +299,9 @@
                         loader.style.display = 'inline-block'; button.disabled = true;
                         const city = button.dataset.city;
                         const theme = button.dataset.theme;
-                        const prompt = `저는 59세 한국인 여행자입니다. 현재 ${city}에 있으며, 오늘의 여행 테마는 '${theme}'입니다. 이 테마에 맞춰, 여유롭고 문화적으로 깊이 있는 활동 2가지를 추천해주세요. 각 활동에 대한 간단한 설명과 왜 50대 여행자에게 적합한지 이유를 포함해주세요. 결과는 마크다운 리스트 형식으로 간결하게 보여주세요.`;
+                        const prompt = `저는 59세 한국인 여행자입니다. 현재 ${city}에 있으며, 오늘의 여행 테마는 '${theme}'입니다. 이 테마에 맞춰, 여유롭고 문화적으로 깊이 있는 활동 2가지를 추천해주세요. 각 활동에 대한 간단한 설명과 왜 50대 여행자에게 적합한지 이유를 포함해주세요. 결과는 마크다운 형식을 사용하지 말고 일반 텍스트로 간결하게 보여주세요.`;
                         const result = await getGeminiResponse(prompt);
-                        outputDiv.innerHTML = result.replace(/\n/g, '<br>');
+                        outputDiv.innerHTML = stripMarkdown(result);
                         outputDiv.style.display = 'block';
                         const content = card.querySelector('.accordion-content');
                         if (content.style.maxHeight) { content.style.maxHeight = content.scrollHeight + 'px'; }
@@ -359,9 +376,9 @@
                         outputDiv.style.display = 'block'; return;
                     }
                     loader.style.display = 'inline-block'; button.disabled = true;
-                    const prompt = `You are a helpful local guide for a 59-year-old Korean traveler in Portugal or Northern Spain. The traveler wants to find a restaurant. Based on their search query, recommend 1-2 specific, real restaurants. For each recommendation, provide the restaurant's name and a brief, appealing description of why it's a good choice. The traveler's search query is: '${preference}'. Please provide the answer in a clear, easy-to-read list format in Korean.`;
+                    const prompt = `You are a helpful local guide for a 59-year-old Korean traveler in Portugal or Northern Spain. The traveler wants to find a restaurant. Based on their search query, recommend 1-2 specific, real restaurants. For each recommendation, provide the restaurant's name and a brief, appealing description of why it's a good choice. The traveler's search query is: '${preference}'. Respond in Korean. Crucially, your entire response must be plain text without any Markdown formatting (do not use *, #, **, etc.).`;
                     const result = await getGeminiResponse(prompt);
-                    outputDiv.innerHTML = result.replace(/\n/g, '<br>');
+                    outputDiv.innerHTML = stripMarkdown(result);
                     outputDiv.style.display = 'block';
                     loader.style.display = 'none'; button.disabled = false;
                 });
